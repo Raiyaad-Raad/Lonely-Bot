@@ -5,9 +5,30 @@
     "dotenv": "^16.0.3",
     "glob": "^8.1.0",
     "moderation": "^1.2.3",
-    "mongoose": "^6.8.3",
+    "mongoose": "^6.9.0",
     "ms": "^2.1.3",
-    "mysql": "^2.18.1",
     "nodemon": "^2.0.20"
-  }
+  },
+  "name": "lonely-bot",
+  "description": "This is a multipurpose discord bot",
+  "version": "1.0.0",
+  "main": "src/cool.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node src/cool.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raiyaad-Raad/Lonely-Bot.git"
+  },
+  "keywords": [
+    "multiperpose",
+    "no-website"
+  ],
+  "author": "Raiyaad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Raiyaad-Raad/Lonely-Bot/issues"
+  },
+  "homepage": "https://github.com/Raiyaad-Raad/Lonely-Bot#readme"
 }
