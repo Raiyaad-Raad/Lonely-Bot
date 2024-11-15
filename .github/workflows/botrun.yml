@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [node18]  # Use the latest Node.js version
+        node-version: [22]  # Use the latest Node.js version
 
     steps:
       - uses: actions/checkout@v4
