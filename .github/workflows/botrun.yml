@@ -1,31 +1,30 @@
-name: NodeJS with Webpack
+name: DiscordJS Bot
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [node18]  # Use the latest Node.js version
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        TOKEN: ${{ secrets.TOKEN }}
-
-    - name: Build
-    env:
-      TOKEN: ${{ secrets.TOKEN }}
-      run: |
-        npm install
-        node src/cool.js
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install Dependencies
+        run: npm install
+      - name: Build and Run
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          # Build your project here, if necessary
+          node src/cool.js
