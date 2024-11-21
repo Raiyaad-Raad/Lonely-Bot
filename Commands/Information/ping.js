@@ -4,7 +4,7 @@ const { reply } = require('discord.js')
 module.exports = {
   name: "ping",
   description: "Displays the ping",
-  category: "Information",
+  category: "📗Information",
   /**
   * @param {Client} client
   * @param {CommandInteraction} interaction

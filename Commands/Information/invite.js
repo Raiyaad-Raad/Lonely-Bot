@@ -2,7 +2,7 @@ const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.j
 module.exports = {
     name: 'invite',
     description: "Invite the bot",
-    category: "Information",
+    category: "📗Information",
 /**
 * @param {Client} client
 * @param {ChatInputCommandInteraction} interaction

@@ -4,7 +4,7 @@ const ms = require("ms")
 module.exports = {
   name: "kick",
   description: "kick a member",
-  category: "moderation",    
+  category: "🪓Moderation",    
   options: [
     {
       name: "user",

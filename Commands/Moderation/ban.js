@@ -5,7 +5,7 @@ const ms = require("ms")
 module.exports = {
   name: "ban",
   description: "ban a member",
-  category: "moderation",    
+  category: "🪓Moderation",    
   options: [
     {
       name: "user",

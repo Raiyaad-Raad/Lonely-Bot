@@ -1,9 +1,9 @@
-const { Client, ChatInputCommandInteraction, EmbedBuilder() } = require('discord.js')
+const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js')
 
 module.exports = {
     name: "support",
     description: "This Command Is For Joining The Support Server Of The Bot",
-    category: "Information",
+    category: "📗Information",
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction
