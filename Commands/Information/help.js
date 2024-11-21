@@ -58,9 +58,10 @@ Click the commands below to get to the commands page.`)
           .setLabel('Category Relateds')
           .setDescription('If you have any problems understanding the command category this is for you.')
           .setValue('catrel'),
-        new StringSelectMenuBuilder()
+        new StringSelectMenuOptionBuilder()
           .setLabel('Setup Relateds')
           .setDescription('Coming Soon')
+          .setDisabled(true)
       )      
     const selectmenuscollector = interaction.channel.createMessageCollector({
       type: ComponentType.StringSelect,
