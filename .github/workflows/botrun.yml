@@ -28,5 +28,5 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
         run: |
           # Build your project here, if necessary
-          npm install
-          node src/cool.js
+          npm install nodemon -g
+          nodemon src/cool.js

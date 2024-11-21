@@ -61,7 +61,6 @@ Click the commands below to get to the commands page.`)
         new StringSelectMenuBuilder()
           .setLabel('Setup Relateds')
           .setDescription('Coming Soon')
-          .setDisabled(true)
       )      
     const selectmenuscollector = interaction.channel.createMessageCollector({
       type: ComponentType.StringSelect,
