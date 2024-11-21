@@ -60,8 +60,7 @@ Click the commands below to get to the commands page.`)
           .setValue('catrel'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Setup Relateds')
-          .setDescription('Coming Soon')
-          .setDisabled(true)
+          .setDescription('Coming Soon {Not Responsive}')
       )      
     const selectmenuscollector = interaction.channel.createMessageCollector({
       type: ComponentType.StringSelect,
