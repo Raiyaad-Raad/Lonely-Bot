@@ -24,6 +24,7 @@ module.exports = {
   * @param {ChatInputCommandInteraction} interaction
   */
   async execute (interaction, client) {
+    if (!intreaction.user.id === "889745154745991168") return null;
 		const use = interaction.guild.members.cache.get(interaction.member.id);
 
       	if (!use.permissions.has([PermissionFlagsBits.KickMembers || PermissionFlagsBits.BanMembers || PermissionFlagsBits.Administrator])) return interaction.reply({embeds: [new EmbedBuilder().setColor("#c22620").setDescription("You do not have permission to use this command.")]})
