@@ -61,6 +61,7 @@ Click the commands below to get to the commands page.`)
         new StringSelectMenuOptionBuilder()
           .setLabel('Setup Relateds')
           .setDescription('Coming Soon {Not Responsive}')
+          .setValue('setup_relateds')
       )      
     const selectmenuscollector = interaction.channel.createMessageCollector({
       type: ComponentType.StringSelect,
