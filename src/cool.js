@@ -1,4 +1,4 @@
-const { Client, Partials, Collection } = require("discord.js");
+const { Client, Partials, Collection } = require("discord.js")
 const dotenv = require("dotenv").config();
 const { promisify } = require('util');
 const { glob } = require('glob');
