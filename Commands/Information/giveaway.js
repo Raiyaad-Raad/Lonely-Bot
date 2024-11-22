@@ -219,3 +219,89 @@ function getRandomWinners(participants, count) {
     return shuffled.slice(0, count);
 }
 
+collector.on('collect', async (buttonInteraction) => {
+    const userId = buttonInteraction.user.id;
+    const giveaway = giveaways.get(giveawayMessage.id);
+
+    if (buttonInteraction.customId === 'joinGiveaway') {
+        // Check if the user is already in the giveaway
+        if (!giveaway.participants.has(userId)) {
+            giveaway.participants.add(userId);
+            await buttonInteraction.deferUpdate(); // Acknowledge the interaction
+            buttonInteraction.followUp({ content: 'You have joined the giveaway!', ephemeral: true });
+        } else {
+            await buttonInteraction.deferUpdate(); // Acknowledge the interaction
+            buttonInteraction.followUp({ content: 'You are already in the giveaway.', ephemeral: true });
+        }
+    } else if (buttonInteraction.customId === 'leaveGiveaway') {
+        // Check if the user is in the giveaway
+        if (giveaway.participants.has(userId)) {
+            giveaway.participants.delete(userId);
+            await buttonInteraction.deferUpdate(); // Acknowledge the interaction
+            buttonInteraction.followUp({ content: 'You have left the giveaway.', ephemeral: true });
+        } else {
+            await buttonInteraction.deferUpdate(); // Acknowledge the interaction
+            buttonInteraction.followUp({ content: 'You are not in the giveaway.', ephemeral: true });
+        }
+    }
+
+    // Update the embed with the current participant count
+    await giveawayMessage.edit({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('🎉 Giveaway!')
+                .setDescription(description)
+                .addFields(
+                    { name: 'Prize', value: prize },
+                    { name: 'Time Remaining', value: formatTimeLeft(giveaway.endTime - Date.now()) },
+                    { name: 'Number of Winners', value: winners.toString() },
+                    { name: 'Hosted By', value: `<@${interaction.user.id}>` },
+                    { name: 'Participants', value: giveaway.participants.size.toString() }
+                )
+                .setColor('Blue')
+        ]
+    });
+});
+
+collector.on('collect', async (buttonInteraction) => {
+    const userId = buttonInteraction.user.id;
+    const giveaway = giveaways.get(giveawayMessage.id);
+
+    // Acknowledge the interaction immediately to prevent failures
+    await buttonInteraction.deferUpdate();
+
+    if (buttonInteraction.customId === 'joinGiveaway') {
+        // Check if the user is already in the giveaway
+        if (!giveaway.participants.has(userId)) {
+            giveaway.participants.add(userId);
+            buttonInteraction.followUp({ content: 'You have joined the giveaway!', ephemeral: true });
+        } else {
+            buttonInteraction.followUp({ content: 'You are already in the giveaway.', ephemeral: true });
+        }
+    } else if (buttonInteraction.customId === 'leaveGiveaway') {
+        // Check if the user is in the giveaway
+        if (giveaway.participants.has(userId)) {
+            giveaway.participants.delete(userId);
+            buttonInteraction.followUp({ content: 'You have left the giveaway.', ephemeral: true });
+        } else {
+            buttonInteraction.followUp({ content: 'You are not in the giveaway.', ephemeral: true });
+        }
+    }
+
+    // Update the embed with the current participant count
+    await giveawayMessage.edit({
+        embeds: [
+            new EmbedBuilder()
+                .setTitle('🎉 Giveaway!')
+                .setDescription(description)
+                .addFields(
+                    { name: 'Prize', value: prize },
+                    { name: 'Time Remaining', value: formatTimeLeft(giveaway.endTime - Date.now()) },
+                    { name: 'Number of Winners', value: winners.toString() },
+                    { name: 'Hosted By', value: `<@${interaction.user.id}>` },
+                    { name: 'Participants', value: giveaway.participants.size.toString() }
+                )
+                .setColor('Blue')
+        ]
+    });
+});
