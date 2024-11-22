@@ -1,7 +1,7 @@
 const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js')
 
 module.exports = {
-    name: "rules", // command name here
+    name: "copyright", // command name here
     description: "Bots rules", // command description here
     category: "Information", // command category here
     /**
