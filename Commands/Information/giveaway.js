@@ -4,7 +4,7 @@ const giveaways = new Map(); // Stores giveaways
 module.exports = {
     name: "gwcreate",
     description: "Create a giveaway",
-    category: "information",
+    category: "Information",
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction
@@ -64,6 +64,7 @@ module.exports = {
                     .addFields(
                         { name: 'Time Remaining', value: time },
                         { name: 'Number of Winners', value: winners.toString() },
+                        { name: 'Hosted By', value: `<@${interaction.user.id}>` }
                     )
                     .setColor('Blue')
             ],
@@ -72,12 +73,17 @@ module.exports = {
                     new ButtonBuilder()
                         .setCustomId('joinGiveaway')
                         .setLabel('Join Giveaway')
-                        .setStyle(ButtonStyle.Success)
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('leaveGiveaway')
+                        .setLabel('Leave Giveaway')
+                        .setStyle(ButtonStyle.Danger)
                 )
             ]
         });
 
         const giveawayData = {
+            host: interaction.user.id,
             participants: new Set(),
             winners,
             endTime: Date.now() + parseDuration(time),
@@ -94,12 +100,20 @@ module.exports = {
             const userId = buttonInteraction.user.id;
             const giveaway = giveaways.get(giveawayMessage.id);
 
-            if (giveaway.participants.has(userId)) {
-                giveaway.participants.delete(userId);
-                buttonInteraction.reply({ content: 'You have left the giveaway.', ephemeral: true });
-            } else {
-                giveaway.participants.add(userId);
-                buttonInteraction.reply({ content: 'You have joined the giveaway!', ephemeral: true });
+            if (buttonInteraction.customId === 'joinGiveaway') {
+                if (giveaway.participants.has(userId)) {
+                    buttonInteraction.reply({ content: 'You are already in the giveaway.', ephemeral: true });
+                } else {
+                    giveaway.participants.add(userId);
+                    buttonInteraction.reply({ content: 'You have joined the giveaway!', ephemeral: true });
+                }
+            } else if (buttonInteraction.customId === 'leaveGiveaway') {
+                if (giveaway.participants.has(userId)) {
+                    giveaway.participants.delete(userId);
+                    buttonInteraction.reply({ content: 'You have left the giveaway.', ephemeral: true });
+                } else {
+                    buttonInteraction.reply({ content: 'You are not in the giveaway.', ephemeral: true });
+                }
             }
         });
 
@@ -110,7 +124,14 @@ module.exports = {
             const participants = Array.from(giveaway.participants);
 
             if (participants.length === 0) {
-                await giveawayMessage.edit({ components: [], embeds: [new EmbedBuilder().setDescription('No one joined the giveaway.')] });
+                await giveawayMessage.edit({
+                    components: [],
+                    embeds: [
+                        new EmbedBuilder()
+                            .setDescription('No one joined the giveaway.')
+                            .setColor('Red')
+                    ]
+                });
                 return;
             }
 
@@ -121,6 +142,7 @@ module.exports = {
                     new EmbedBuilder()
                         .setTitle('🎉 Giveaway Ended!')
                         .setDescription(`Winners:\n${winners.map(w => `<@${w}>`).join(', ')}`)
+                        .addFields({ name: 'Hosted By', value: `<@${giveaway.host}>` })
                         .setColor('Green')
                 ]
             });
