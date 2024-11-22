@@ -1,7 +1,13 @@
-const { Client, ChatInputCommandInteraction, EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const { Client, ChatInputCommandInteraction, EmbedBuilder, ApplicationCommandOptionType, Intents } = require('discord.js');
+const sqlite3 = require('sqlite3').verbose();
+const { token, clientId, guildId } = require('./config.json');
 
-// In-memory economy storage
-const economy = new Map();
+// Bot Initialization
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+
+// SQLite Database Initialization
+const db = new sqlite3.Database('./economy.db');
+db.run(`CREATE TABLE IF NOT EXISTS economy (userId TEXT PRIMARY KEY, balance INTEGER DEFAULT 1000)`);
 
 module.exports = {
     name: "economy",
@@ -16,37 +22,38 @@ module.exports = {
 
         if (subcommand === "bal") {
             const target = interaction.options.getUser("user") || interaction.user;
-            const balance = getBalance(target.id);
-
-            if (target.id === interaction.user.id) {
-                await interaction.reply({ content: `Your balance is **${balance} coins**.`, ephemeral: true });
-            } else {
-                await interaction.reply({ content: `${target.username}'s balance is **${balance} coins**.` });
-            }
+            getBalance(target.id, (balance) => {
+                if (target.id === interaction.user.id) {
+                    interaction.reply({ content: `Your balance is **${balance} coins**.`, ephemeral: true });
+                } else {
+                    interaction.reply({ content: `${target.username}'s balance is **${balance} coins**.` });
+                }
+            });
         }
 
         if (subcommand === "give") {
             const target = interaction.options.getUser("user");
             const amount = interaction.options.getInteger("amount");
-            const senderBalance = getBalance(interaction.user.id);
 
             if (!target || interaction.user.id === target.id) {
-                return await interaction.reply({ content: "You cannot send coins to yourself or an invalid user.", ephemeral: true });
+                return interaction.reply({ content: "You cannot send coins to yourself or an invalid user.", ephemeral: true });
             }
 
             if (amount <= 0) {
-                return await interaction.reply({ content: "The transfer amount must be greater than zero.", ephemeral: true });
+                return interaction.reply({ content: "The transfer amount must be greater than zero.", ephemeral: true });
             }
 
-            if (senderBalance < amount) {
-                return await interaction.reply({ content: "You do not have enough coins to complete this transfer.", ephemeral: true });
-            }
+            getBalance(interaction.user.id, (senderBalance) => {
+                if (senderBalance < amount) {
+                    return interaction.reply({ content: "You do not have enough coins to complete this transfer.", ephemeral: true });
+                }
 
-            // Transfer coins
-            updateBalance(interaction.user.id, -amount);
-            updateBalance(target.id, amount);
+                // Transfer coins
+                updateBalance(interaction.user.id, -amount);
+                updateBalance(target.id, amount);
 
-            await interaction.reply({ content: `You have successfully sent **${amount} coins** to <@${target.id}>.` });
+                interaction.reply({ content: `You have successfully sent **${amount} coins** to <@${target.id}>.` });
+            });
         }
 
         if (subcommand === "earn") {
@@ -87,7 +94,7 @@ module.exports = {
                 }
             });
 
-            collector.on("end", (collected, reason) => {
+            collector.on("end", (_, reason) => {
                 if (reason === "time") {
                     interaction.followUp({ content: "You ran out of time to answer the question.", ephemeral: true });
                 }
@@ -96,15 +103,93 @@ module.exports = {
     }
 };
 
-// Utility functions
-function getBalance(userId) {
-    if (!economy.has(userId)) {
-        economy.set(userId, 1000); // Default balance
-    }
-    return economy.get(userId);
+// Utility Functions
+function getBalance(userId, callback) {
+    db.get("SELECT balance FROM economy WHERE userId = ?", [userId], (err, row) => {
+        if (err) {
+            console.error(err);
+            return callback(1000); // Default balance if error occurs
+        }
+        if (row) {
+            callback(row.balance);
+        } else {
+            db.run("INSERT INTO economy (userId, balance) VALUES (?, 1000)", [userId]);
+            callback(1000);
+        }
+    });
 }
 
 function updateBalance(userId, amount) {
-    const currentBalance = getBalance(userId);
-    economy.set(userId, currentBalance + amount);
+    getBalance(userId, (currentBalance) => {
+        const newBalance = currentBalance + amount;
+        db.run("UPDATE economy SET balance = ? WHERE userId = ?", [newBalance, userId]);
+    });
 }
+
+// Slash Command Registration
+client.on("ready", async () => {
+    console.log(`${client.user.tag} is online!`);
+
+    const commands = [
+        {
+            name: "economy",
+            description: "Economy system with balance, transfer, and earning coins",
+            options: [
+                {
+                    name: "bal",
+                    description: "Check your balance or another user's balance",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "The user whose balance you want to check",
+                            type: ApplicationCommandOptionType.User,
+                            required: false,
+                        },
+                    ],
+                },
+                {
+                    name: "give",
+                    description: "Give coins to another user",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "The user to send coins to",
+                            type: ApplicationCommandOptionType.User,
+                            required: true,
+                        },
+                        {
+                            name: "amount",
+                            description: "The amount of coins to send",
+                            type: ApplicationCommandOptionType.Integer,
+                            required: true,
+                        },
+                    ],
+                },
+                {
+                    name: "earn",
+                    description: "Earn coins by solving a math question",
+                    type: ApplicationCommandOptionType.Subcommand,
+                },
+            ],
+        },
+    ];
+
+    await client.application.commands.set(commands, guildId);
+    console.log("Slash commands registered.");
+});
+
+// Interaction Handling
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isCommand()) return;
+
+    const command = require("./economy.js");
+    if (interaction.commandName === command.name) {
+        await command.execute(interaction, client);
+    }
+});
+
+// Login
+client.login(token);
+
