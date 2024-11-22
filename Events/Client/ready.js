@@ -1,5 +1,6 @@
 const { ActivityType } = require('discord.js')
-const config = require("../../config.js")
+const config = require("../../config.js");
+const chalk = require('chalk');
 module.exports = {
     name: "ready",
     once: "true",
@@ -17,7 +18,7 @@ module.exports = {
               type: ActivityType.Listening
             })
             client.user.setStatus('idle')
-            console.log("Ready To Go.")
+            console.log(chalk.green, chalk.bgGreen('[Lonely-Bot]: '), chalk.green, chalk.bold(`${client.user.tag} Is Online!`))
         }
     }
 }
