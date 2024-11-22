@@ -11,6 +11,6 @@ module.exports = {
     **/
     async execute(interaction, client) {
         // Send a reply when the command is triggered
-        await interaction.reply('Here is a slap, booom! 💥');
+        await interaction.reply('Here is a slap, booom! ');
     }
 }
