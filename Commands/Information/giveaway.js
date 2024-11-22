@@ -64,7 +64,8 @@ module.exports = {
                     .addFields(
                         { name: 'Time Remaining', value: time },
                         { name: 'Number of Winners', value: winners.toString() },
-                        { name: 'Hosted By', value: `<@${interaction.user.id}>` }
+                        { name: 'Hosted By', value: `<@${interaction.user.id}>` },
+                        { name: 'Participants', value: '0' } // Placeholder for participants count
                     )
                     .setColor('Blue')
             ],
@@ -101,11 +102,11 @@ module.exports = {
             const giveaway = giveaways.get(giveawayMessage.id);
 
             if (buttonInteraction.customId === 'joinGiveaway') {
-                if (giveaway.participants.has(userId)) {
-                    buttonInteraction.reply({ content: 'You are already in the giveaway.', ephemeral: true });
-                } else {
+                if (!giveaway.participants.has(userId)) {
                     giveaway.participants.add(userId);
                     buttonInteraction.reply({ content: 'You have joined the giveaway!', ephemeral: true });
+                } else {
+                    buttonInteraction.reply({ content: 'You are already in the giveaway.', ephemeral: true });
                 }
             } else if (buttonInteraction.customId === 'leaveGiveaway') {
                 if (giveaway.participants.has(userId)) {
@@ -115,6 +116,22 @@ module.exports = {
                     buttonInteraction.reply({ content: 'You are not in the giveaway.', ephemeral: true });
                 }
             }
+
+            // Update the embed with the current participant count
+            giveawayMessage.edit({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle('🎉 Giveaway!')
+                        .setDescription(description)
+                        .addFields(
+                            { name: 'Time Remaining', value: time },
+                            { name: 'Number of Winners', value: winners.toString() },
+                            { name: 'Hosted By', value: `<@${interaction.user.id}>` },
+                            { name: 'Participants', value: giveaway.participants.size.toString() }
+                        )
+                        .setColor('Blue')
+                ]
+            });
         });
 
         collector.on('end', async () => {
@@ -135,13 +152,15 @@ module.exports = {
                 return;
             }
 
-            const winners = getRandomWinners(participants, giveaway.winners);
+            // Randomly select a winner
+            const winner = participants[Math.floor(Math.random() * participants.length)];
+
             await giveawayMessage.edit({
                 components: [],
                 embeds: [
                     new EmbedBuilder()
                         .setTitle('🎉 Giveaway Ended!')
-                        .setDescription(`Winners:\n${winners.map(w => `<@${w}>`).join(', ')}`)
+                        .setDescription(`The winner is: <@${winner}>`)
                         .addFields({ name: 'Hosted By', value: `<@${giveaway.host}>` })
                         .setColor('Green')
                 ]
@@ -164,9 +183,4 @@ function parseDuration(duration) {
         case 'd': return value * 24 * 60 * 60 * 1000;
         default: return 0;
     }
-}
-
-function getRandomWinners(participants, count) {
-    const shuffled = participants.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
 }
