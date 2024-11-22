@@ -3,7 +3,7 @@ const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.j
 module.exports = {
     name: "clear", // command name
     description: "Clear a specified number of messages (1-20)", // command description
-    category: "moderation", // command category
+    category: "information", // command category
     
     /**
     * @param {Client} client
