@@ -25,7 +25,7 @@ module.exports = {
                 { name: '7. Content Moderation', value: 'If your bot facilitates user-generated content (e.g., messages, images), ensure moderation features are in place to filter harmful content (profanity, hate speech, etc.). Allow server owners to customize moderation levels.' },
                 { name: '8. Support and Reporting', value: 'Provide a clear method for users to report bugs, misuse, or abuse. Regularly monitor these reports and act promptly to resolve issues.' },
                 { name: '9. Uptime and Maintenance', value: 'Notify users of planned downtime or maintenance via status messages or announcements. Build automatic recovery systems for unexpected outages if possible.' },
-                { name: '10. Licensing and Open Source', value: 'If your bot uses external libraries or code, ensure you comply with their licenses. If your bot is open source, include proper documentation and a license file in your repository.' }
+                { name: '10. Licensing and Open Source', value: 'if your bot uses external libraries or code, ensure you comply with their licenses. If your bot is open source, include proper documentation and a license file in your repository.' }
             )
             .setTimestamp(); // Optional: adds a timestamp to the embed
 
