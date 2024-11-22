@@ -1,15 +1,16 @@
 const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js')
 
 module.exports = {
-    name: "slap", // command name here
-    description: "giving a slap", // command description here
-    category: "Information", // command category here
+    name: "slap", // Command name
+    description: "Send a virtual slap", // Command description
+    category: "fun", // Category of the command
+
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction
     **/
     async execute(interaction, client) {
-      // code here
-        await interaction.reply({ text: "hers a slap" });
+        // Send a reply when the command is triggered
+        await interaction.reply('Here is a slap, booom! 💥');
     }
 }
