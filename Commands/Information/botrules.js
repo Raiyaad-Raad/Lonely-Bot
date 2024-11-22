@@ -1,7 +1,7 @@
 const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js')
 
 module.exports = {
-    name: "copyright", // command name here
+    name: "rule", // command name here
     description: "Bots rules", // command description here
     category: "Information", // command category here
     /**
@@ -10,51 +10,6 @@ module.exports = {
     **/
     async execute(interaction, client) {
       // code here
-    }
-}
-
-const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
-require('dotenv').config();
-
-// Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
-// Define the /rule command
-const commands = [
-    new SlashCommandBuilder()
-        .setName('rule')
-        .setDescription('Get a list of rules for the bot'),
-];
-
-// Register the /rule command
-const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
-
-(async () => {
-    try {
-        console.log('Started refreshing application (/) commands.');
-
-        // Register commands for a specific server (guild-based registration)
-        await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-            { body: commands },
-        );
-
-        console.log('Successfully reloaded application (/) commands.');
-    } catch (error) {
-        console.error('Error refreshing commands:', error);
-    }
-})();
-
-// Event listener for when the bot is ready
-client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-});
-
-// Listen for slash command interactions
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) return;
-
-    if (interaction.commandName === 'rule') {
         const rules = `
 **1. Compliance with Discord's Terms of Service**  
 Ensure the bot complies with Discord's Terms of Service and Community Guidelines.  
@@ -101,7 +56,4 @@ If your bot is open source, include proper documentation and a license file in y
 
         await interaction.reply(rules);
     }
-});
-
-// Log in to Discord
-client.login(process.env.BOT_TOKEN);
+}
