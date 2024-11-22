@@ -1,41 +1,64 @@
-const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js');
+const { Client, ChatInputCommandInteraction, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, PermissionsBitField } = require('discord.js');
 
 module.exports = {
-    name: "clear", // command name
-    description: "Clear a specified number of messages (1-20)", // command description
-    category: "information", // command category
-    
+    name: "clear", // command name here
+    description: "Clear a specific number of messages from the channel", // command description here
+    category: "Information", // command category here
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction
     **/
     async execute(interaction, client) {
-        // Get the number of messages to delete from the user's input
-        const amount = interaction.options.getInteger('amount'); 
-
-        // Check if the amount is within the valid range (1-20)
-        if (amount < 1 || amount > 20) {
-            return interaction.reply({
-                content: 'You can only delete between 1 and 20 messages!',
-                ephemeral: true, // reply visible only to the user
-            });
+        // Check if the user has the MANAGE_MESSAGES permission
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+            return interaction.reply({ content: "You don't have permission to use this command.", ephemeral: true });
         }
 
-        try {
-            // Delete the messages (amount + 1 to include the command message itself)
-            await interaction.channel.bulkDelete(amount, true);
+        // Create a modal
+        const modal = new ModalBuilder()
+            .setCustomId('clearModal')
+            .setTitle('Clear Messages');
 
-            // Send a confirmation message
-            return interaction.reply({
-                content: `Successfully deleted ${amount} message(s)!`,
-                ephemeral: true, // reply visible only to the user
+        // Create a text input for specifying the number of messages
+        const input = new TextInputBuilder()
+            .setCustomId('messageCount')
+            .setLabel('How many messages should I clear? (1-50)')
+            .setPlaceholder('Enter a number between 1 and 50')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+
+        // Add the input to an ActionRow
+        const actionRow = new ActionRowBuilder().addComponents(input);
+
+        // Add the ActionRow to the modal
+        modal.addComponents(actionRow);
+
+        // Show the modal to the user
+        await interaction.showModal(modal);
+
+        // Collect modal submission
+        const filter = (modalInteraction) => modalInteraction.customId === 'clearModal' && modalInteraction.user.id === interaction.user.id;
+        interaction.awaitModalSubmit({ filter, time: 60000 })
+            .then(async (modalInteraction) => {
+                const messageCount = parseInt(modalInteraction.fields.getTextInputValue('messageCount'));
+
+                // Validate the input
+                if (isNaN(messageCount) || messageCount < 1 || messageCount > 50) {
+                    return modalInteraction.reply({ content: 'Please enter a valid number between 1 and 50.', ephemeral: true });
+                }
+
+                // Attempt to delete the messages
+                try {
+                    const deletedMessages = await interaction.channel.bulkDelete(messageCount, true);
+                    await modalInteraction.reply({ content: `Successfully deleted ${deletedMessages.size} messages.`, ephemeral: true });
+                } catch (error) {
+                    console.error(error);
+                    await modalInteraction.reply({ content: 'Failed to delete messages. Ensure they are not older than 14 days.', ephemeral: true });
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                interaction.followUp({ content: 'You did not respond in time.', ephemeral: true });
             });
-        } catch (error) {
-            console.error(error);
-            return interaction.reply({
-                content: 'There was an error trying to clear messages.',
-                ephemeral: true,
-            });
-        }
     }
 };
