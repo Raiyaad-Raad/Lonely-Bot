@@ -1,9 +1,9 @@
 const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: "rule", // command name here
+    name: "rules", // command name here
     description: "Provides a list of rules", // command description here
-    category: "Information", // command category here
+    category: "📗Information", // command category here
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction

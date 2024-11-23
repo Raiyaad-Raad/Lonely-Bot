@@ -3,7 +3,7 @@ const { Client, ChatInputCommandInteraction, ModalBuilder, TextInputBuilder, Tex
 module.exports = {
     name: "clear", // command name here
     description: "Clear a specific number of messages from the channel", // command description here
-    category: "Information", // command category here
+    category: "🪓Moderation", // command category here
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction
