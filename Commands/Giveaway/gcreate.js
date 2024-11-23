@@ -54,19 +54,19 @@ module.exports = {
             filter: i => i.isModalSubmit(),
             time: 60000 // 15 seconds
         });
-        collector.on('collect', async (interaction) => {
-            if (interaction.customId === 'giveaway_modal') {
-                const durationString = interaction.fields.getTextInputValue('duration');
-                const prize = interaction.fields.getTextInputValue('prize');
-                const description = interaction.fields.getTextInputValue('description') || 'No description provided.';
-                const winnersCount = parseInt(interaction.fields.getTextInputValue('winners'), 10);
+        collector.on('collect', async i => {
+            if (i.customId === 'giveaway_modal') {
+                const durationString = i.fields.getTextInputValue('duration');
+                const prize = i.fields.getTextInputValue('prize');
+                const description = i.fields.getTextInputValue('description') || 'No description provided.';
+                const winnersCount = parseInt(i.fields.getTextInputValue('winners'), 10);
     
                 if (isNaN(winnersCount) || winnersCount <= 0) {
-                    return interaction.reply("⚠️ Invalid number of winners. Giveaway canceled.");
+                    return i.reply("⚠️ Invalid number of winners. Giveaway canceled.");
                 }
     
                 const duration = parseDuration(durationString);
-                if (!duration) return interaction.reply("⚠️ Invalid duration format. Giveaway canceled.");
+                if (!duration) return i.reply("⚠️ Invalid duration format. Giveaway canceled.");
     
                 // Calculate the end timestamp
                 const endTimestamp = Date.now() + duration;
@@ -83,7 +83,7 @@ module.exports = {
                     .setLabel("Join Giveaway")
                     .setStyle(ButtonStyle.Primary);
     
-                const giveawayMessage = await interaction.reply({
+                const giveawayMessage = await i.reply({
                     embeds: [embed],
                     components: [new ActionRowBuilder().addComponents(participateButton)],
                     fetchReply: true,
