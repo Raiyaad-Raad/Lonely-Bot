@@ -360,8 +360,15 @@
 //         default: return null;
 //     }
 // }
-const { Client, ChatInputCommandInteraction, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
-const { db } = require('../../Events/Client/mongodb');
+
+const {
+  Client,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ActionRowBuilder,
+} = require('discord.js');
 
 module.exports = {
   name: "gcreate",
@@ -372,152 +379,134 @@ module.exports = {
    * @param {ChatInputCommandInteraction} interaction
    **/
   async execute(interaction, client) {
-    // Ask for Duration
-    await interaction.channel.send('Please enter the duration for the giveaway (e.g., 60s, 5m, 1h):');
+    try {
+      if (!interaction.isCommand()) return;
 
-    const durationResponse = await interaction.channel.awaitMessages({
-      filter: (msg) => msg.author.id === interaction.user.id,
-      max: 1,
-      time: 60000, // 60 seconds to reply
-    }).then((collected) => collected.first());
+      // Ask for Duration
+      await interaction.reply('Please enter the duration for the giveaway (e.g., 60s, 5m, 1h):');
+      const durationResponse = await interaction.channel.awaitMessages({
+        filter: (msg) => msg.author.id === interaction.user.id,
+        max: 1,
+        time: 60000,
+      }).then((collected) => collected.first()?.content);
 
-    if (!durationResponse) {
-      return interaction.channel.send("⚠️ You didn't provide a duration in time. Giveaway canceled.");
-    }
+      if (!durationResponse) {
+        return interaction.followUp("⚠️ You didn't provide a duration in time. Giveaway canceled.");
+      }
 
-    const durationString = durationResponse.content;
-    const duration = parseDuration(durationString);
-    if (!duration) {
-      return interaction.channel.send("⚠️ Invalid duration format. Giveaway canceled.");
-    }
+      const duration = parseDuration(durationResponse);
+      if (!duration) {
+        return interaction.followUp("⚠️ Invalid duration format. Giveaway canceled.");
+      }
 
-    // Ask for Prize
-    await interaction.channel.send('Please enter the prize for the giveaway:');
+      // Ask for Prize
+      await interaction.followUp('Please enter the prize for the giveaway:');
+      const prizeResponse = await interaction.channel.awaitMessages({
+        filter: (msg) => msg.author.id === interaction.user.id,
+        max: 1,
+        time: 60000,
+      }).then((collected) => collected.first()?.content);
 
-    const prizeResponse = await interaction.channel.awaitMessages({
-      filter: (msg) => msg.author.id === interaction.user.id,
-      max: 1,
-      time: 60000, // 60 seconds to reply
-    }).then((collected) => collected.first());
+      if (!prizeResponse) {
+        return interaction.followUp("⚠️ You didn't provide a prize in time. Giveaway canceled.");
+      }
 
-    if (!prizeResponse) {
-      return interaction.channel.send("⚠️ You didn't provide a prize in time. Giveaway canceled.");
-    }
+      const prize = prizeResponse;
 
-    const prize = prizeResponse.content;
+      // Ask for Description (Optional)
+      await interaction.followUp('Please enter a description for the giveaway (optional):');
+      const descriptionResponse = await interaction.channel.awaitMessages({
+        filter: (msg) => msg.author.id === interaction.user.id,
+        max: 1,
+        time: 60000,
+      }).then((collected) => collected.first()?.content);
 
-    // Ask for Description (Optional)
-    await interaction.channel.send('Please enter a description for the giveaway (optional):');
+      const description = descriptionResponse || 'No description provided.';
 
-    const descriptionResponse = await interaction.channel.awaitMessages({
-      filter: (msg) => msg.author.id === interaction.user.id,
-      max: 1,
-      time: 60000, // 60 seconds to reply
-    }).then((collected) => collected.first());
+      // Ask for Number of Winners
+      await interaction.followUp('Please enter the number of winners for the giveaway:');
+      const winnersResponse = await interaction.channel.awaitMessages({
+        filter: (msg) => msg.author.id === interaction.user.id,
+        max: 1,
+        time: 60000,
+      }).then((collected) => collected.first()?.content);
 
-    const description = descriptionResponse ? descriptionResponse.content : 'No description provided.';
+      if (!winnersResponse || isNaN(winnersResponse) || parseInt(winnersResponse, 10) <= 0) {
+        return interaction.followUp("⚠️ Invalid number of winners. Giveaway canceled.");
+      }
 
-    // Ask for Number of Winners
-    await interaction.channel.send('Please enter the number of winners for the giveaway:');
+      const winnersCount = parseInt(winnersResponse, 10);
+      const endTimestamp = Date.now() + duration;
 
-    const winnersResponse = await interaction.channel.awaitMessages({
-      filter: (msg) => msg.author.id === interaction.user.id,
-      max: 1,
-      time: 60000, // 60 seconds to reply
-    }).then((collected) => collected.first());
+      // Create Embed for Giveaway
+      const embed = new EmbedBuilder()
+        .setTitle("🎉 Giveaway 🎉")
+        .setDescription(
+          `**Prize:** ${prize}\n**Description:** ${description}\n**Participants:** 0\nClick the button below to participate!`
+        )
+        .setColor(0x00AE86)
+        .setFooter({ text: `Ends: <t:${Math.floor(endTimestamp / 1000)}:R> | Winners: ${winnersCount}` });
 
-    if (!winnersResponse || isNaN(winnersResponse.content) || parseInt(winnersResponse.content, 10) <= 0) {
-      return interaction.channel.send("⚠️ Invalid number of winners. Giveaway canceled.");
-    }
+      // Create Button for participants to join
+      const participateButton = new ButtonBuilder()
+        .setCustomId("join-giveaway")
+        .setLabel("Join Giveaway")
+        .setStyle(ButtonStyle.Primary);
 
-    const winnersCount = parseInt(winnersResponse.content, 10);
+      const giveawayMessage = await interaction.channel.send({
+        embeds: [embed],
+        components: [new ActionRowBuilder().addComponents(participateButton)],
+      });
 
-    // Calculate end timestamp
-    const endTimestamp = Date.now() + duration;
+      const participants = new Set();
 
-    // Create Embed for Giveaway
-    const embed = new EmbedBuilder()
-      .setTitle("🎉 Giveaway 🎉")
-      .setDescription(`**Prize:** ${prize}\n**Description:** ${description}\n**Participants:** 0\nClick the button below to participate!`)
-      .setColor(0x00AE86)
-      .setFooter({ text: `Ends: <t:${Math.floor(endTimestamp / 1000)}:R> | Winners: ${winnersCount}` });
+      // Collect button interactions
+      const buttonCollector = giveawayMessage.createMessageComponentCollector({
+        componentType: 'BUTTON',
+        time: duration,
+      });
 
-    // Create Button for participants to join
-    const participateButton = new ButtonBuilder()
-      .setCustomId("join-giveaway")
-      .setLabel("Join Giveaway")
-      .setStyle(ButtonStyle.Primary);
+      buttonCollector.on('collect', async (btnInteraction) => {
+        if (btnInteraction.customId === 'join-giveaway') {
+          if (participants.has(btnInteraction.user.id)) {
+            await btnInteraction.reply({
+              content: "You are already in the giveaway!",
+              ephemeral: true,
+            });
+          } else {
+            participants.add(btnInteraction.user.id);
+            await btnInteraction.reply({
+              content: "You have successfully joined the giveaway!",
+              ephemeral: true,
+            });
 
-    // Send Giveaway Embed with Join Button
-    const giveawayMessage = await interaction.channel.send({
-      embeds: [embed],
-      components: [new ActionRowBuilder().addComponents(participateButton)],
-    });
-
-    let participants = new Set();
-
-    // Wait for the giveaway to end
-    setTimeout(async () => {
-      const updatedMessage = await interaction.channel.messages.fetch(giveawayMessage.id);
-      const buttonCollector = updatedMessage.createMessageComponentCollector({ componentType: 'BUTTON', time: duration });
-
-      buttonCollector.on('collect', async (i) => {
-        if (i.customId === 'join-giveaway' && !participants.has(i.user.id)) {
-          participants.add(i.user.id);
-          await i.reply({ content: "You have joined the giveaway!", ephemeral: true });
-
-          // Update the embed with the new participant count (Refactored)
-          const updatedEmbed = embed
-            .setDescription(`**Prize:** ${prize}\n**Description:** ${description}\n**Participants:** ${participants.size}\nClick the button below to participate!`)
-            .setFooter({ text: `Ends: <t:${Math.floor(endTimestamp / 1000)}:R> | Winners: ${winnersCount}` });
-
-          await giveawayMessage.edit({ embeds: [updatedEmbed] });
-        } else if (i.customId === 'join-giveaway' && participants.has(i.user.id)) {
-          const confirmButtonRow = new ActionRowBuilder()
-            .addComponents(
-              new ButtonBuilder().setCustomId('confirm-leave-yes').setLabel('Yes').setStyle(ButtonStyle.Danger),
-              new ButtonBuilder().setCustomId('confirm-leave-no').setLabel('No').setStyle(ButtonStyle.Secondary)
+            // Update the embed with the new participant count
+            const updatedEmbed = EmbedBuilder.from(embed).setDescription(
+              `**Prize:** ${prize}\n**Description:** ${description}\n**Participants:** ${participants.size}\nClick the button below to participate!`
             );
-
-          await i.reply({
-            content: "You are already in the giveaway. Do you want to leave?",
-            components: [confirmButtonRow],
-            ephemeral: true
-          });
-
-          const leaveFilter = (btn) => btn.user.id === i.user.id;
-          const leaveCollector = updatedMessage.createMessageComponentCollector({ filter: leaveFilter, time: 15000 });
-
-          leaveCollector.on('collect', async (buttonInteraction) => {
-            if (buttonInteraction.customId === 'confirm-leave-yes') {
-              participants.delete(i.user.id);
-              await buttonInteraction.reply({ content: "You have left the giveaway.", ephemeral: true });
-
-              // Update the embed with the new participant count (Refactored)
-              const updatedEmbed = embed
-                .setDescription(`**Prize:** ${prize}\n**Description:** ${description}\n**Participants:** ${participants.size}\nClick the button below to participate!`)
-                .setFooter({ text: `Ends: <t:${Math.floor(endTimestamp / 1000)}:R> | Winners: ${winnersCount}` });
-
-              await giveawayMessage.edit({ embeds: [updatedEmbed] });
-            } else if (buttonInteraction.customId === 'confirm-leave-no') {
-              await buttonInteraction.reply({ content: "You decided to stay in the giveaway.", ephemeral: true });
-            }
-            leaveCollector.stop();
-          });
+            await giveawayMessage.edit({ embeds: [updatedEmbed] });
+          }
         }
       });
 
-      // After the giveaway ends, pick winners
-      setTimeout(() => {
-        if (participants.size >= winnersCount) {
-          const winners = Array.from(participants).slice(0, winnersCount);
-          const winnersList = winners.map((userId) => `<@${userId}>`).join(", ");
-          interaction.channel.send(`🎉 Congratulations to the winners: ${winnersList}! You won **${prize}**!`);
-        } else {
-          interaction.channel.send("⚠️ Not enough participants for the giveaway.");
+      buttonCollector.on('end', async () => {
+        if (participants.size === 0) {
+          await interaction.channel.send("⚠️ The giveaway ended with no participants.");
+          return;
         }
-      }, duration);
-    }, duration);
+
+        // Select winners randomly
+        const winners = Array.from(participants).sort(() => 0.5 - Math.random()).slice(0, winnersCount);
+        const winnersList = winners.map((id) => `<@${id}>`).join(", ");
+
+        await interaction.channel.send(
+          `🎉 Congratulations to the winners: ${winnersList}! You won **${prize}**!`
+        );
+      });
+    } catch (error) {
+      console.error(error);
+      await interaction.followUp("⚠️ An error occurred while running the giveaway.");
+    }
   },
 };
 
