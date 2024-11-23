@@ -190,37 +190,83 @@ module.exports = {
      * @param {ChatInputCommandInteraction} interaction
      **/
     async execute(interaction, client) {
-        // Get arguments from the interaction
-        const durationString = interaction.options.getString('duration');
-        const prize = interaction.options.getString('prize');
-        const description = interaction.options.getString('description') || 'No description provided.';
-        const winnersCount = interaction.options.getInteger('winners');
+        // Ask for Duration
+        await interaction.reply('Please enter the duration for the giveaway (e.g., 60s, 5m, 1h):');
 
-        // Validation for the winners count
-        if (isNaN(winnersCount) || winnersCount <= 0) {
+        const durationResponse = await interaction.channel.awaitMessages({
+            filter: (msg) => msg.author.id === interaction.user.id,
+            max: 1,
+            time: 60000, // 60 seconds to reply
+        }).then((collected) => collected.first());
+
+        if (!durationResponse) {
+            return interaction.reply("⚠️ You didn't provide a duration in time. Giveaway canceled.");
+        }
+
+        const durationString = durationResponse.content;
+        const duration = parseDuration(durationString);
+        if (!duration) {
+            return interaction.reply("⚠️ Invalid duration format. Giveaway canceled.");
+        }
+
+        // Ask for Prize
+        await interaction.reply('Please enter the prize for the giveaway:');
+
+        const prizeResponse = await interaction.channel.awaitMessages({
+            filter: (msg) => msg.author.id === interaction.user.id,
+            max: 1,
+            time: 60000, // 60 seconds to reply
+        }).then((collected) => collected.first());
+
+        if (!prizeResponse) {
+            return interaction.reply("⚠️ You didn't provide a prize in time. Giveaway canceled.");
+        }
+
+        const prize = prizeResponse.content;
+
+        // Ask for Description (Optional)
+        await interaction.reply('Please enter a description for the giveaway (optional):');
+
+        const descriptionResponse = await interaction.channel.awaitMessages({
+            filter: (msg) => msg.author.id === interaction.user.id,
+            max: 1,
+            time: 60000, // 60 seconds to reply
+        }).then((collected) => collected.first());
+
+        const description = descriptionResponse ? descriptionResponse.content : 'No description provided.';
+
+        // Ask for Number of Winners
+        await interaction.reply('Please enter the number of winners for the giveaway:');
+
+        const winnersResponse = await interaction.channel.awaitMessages({
+            filter: (msg) => msg.author.id === interaction.user.id,
+            max: 1,
+            time: 60000, // 60 seconds to reply
+        }).then((collected) => collected.first());
+
+        if (!winnersResponse || isNaN(winnersResponse.content) || parseInt(winnersResponse.content, 10) <= 0) {
             return interaction.reply("⚠️ Invalid number of winners. Giveaway canceled.");
         }
 
-        // Parse the duration input
-        const duration = parseDuration(durationString);
-        if (!duration) return interaction.reply("⚠️ Invalid duration format. Giveaway canceled.");
+        const winnersCount = parseInt(winnersResponse.content, 10);
 
-        // Calculate the end timestamp
+        // Calculate end timestamp for the giveaway
         const endTimestamp = Date.now() + duration;
 
-        // Start the giveaway embed with the initial participant count set to 0
+        // Create Embed for Giveaway
         const embed = new EmbedBuilder()
             .setTitle("🎉 Giveaway 🎉")
             .setDescription(`**Prize:** ${prize}\n**Description:** ${description}\n**Participants:** 0\nClick the button below to participate!`)
             .setColor(0x00AE86)
             .setFooter({ text: `Ends: <t:${Math.floor(endTimestamp / 1000)}:R> | Winners: ${winnersCount}` });
 
+        // Create Button for participants to join
         const participateButton = new ButtonBuilder()
             .setCustomId("join-giveaway")
             .setLabel("Join Giveaway")
             .setStyle(ButtonStyle.Primary);
 
-        // Send the giveaway message with a participation button
+        // Send Giveaway Embed with Join Button
         const giveawayMessage = await interaction.reply({
             embeds: [embed],
             components: [new ActionRowBuilder().addComponents(participateButton)],
