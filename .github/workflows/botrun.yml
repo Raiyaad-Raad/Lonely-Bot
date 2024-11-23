@@ -26,6 +26,7 @@ jobs:
       - name: Build and Run
         env:
           TOKEN: ${{ secrets.TOKEN }}
+          MONGO: ${{ secrets.MONGO }}
         run: |
           # Build your project here, if necessary
           npm install nodemon -g
