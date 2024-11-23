@@ -371,7 +371,7 @@ module.exports = {
    * @param {Client} client
    * @param {ChatInputCommandInteraction} interaction
    **/
-  async execute(interaction, client) 1  {
+  async execute(interaction, client) {
     // Ask for Duration
     await interaction.channel.send('Please enter the duration for the giveaway (e.g., 60s, 5m, 1h):');
 
