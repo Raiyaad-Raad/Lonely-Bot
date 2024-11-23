@@ -17,6 +17,6 @@ module.exports = {
             useNewUrlParser: true,
             useUnifiedTopology: true
 
-        }).then((mongo) => console.log(chalk.green('[MONGO]: '), chalk.green('Mongoose Database aka. Cluster Connected Successfully'))).catch((err) => console.log(err); process.exit(););
+        }).then((mongo) => console.log(chalk.green('[MONGO]: '), chalk.green('Mongoose Database aka. Cluster Connected Successfully'))).catch((err) => console.log(err))
     }
 }
