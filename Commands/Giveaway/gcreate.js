@@ -87,7 +87,7 @@ module.exports = {
                     embeds: [embed],
                     components: [new ActionRowBuilder().addComponents(participateButton)],
                     fetchReply: true,
-                });
+                }); 
     
                 let participants = new Set();
     
