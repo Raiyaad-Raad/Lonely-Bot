@@ -204,12 +204,11 @@ module.exports = {
         // Step 2: Show the modal to the user
         await interaction.showModal(modal);
     },
-};
 
-// Listen for the modal submit interaction
-module.exports = {
-    name: 'modalSubmit',
-    async execute(interaction, client) {
+    /**
+     * Handles the submission of the giveaway creation modal.
+     */
+    async handleModalSubmit(interaction) {
         if (interaction.customId === 'giveaway_modal') {
             const durationString = interaction.fields.getTextInputValue('duration');
             const prize = interaction.fields.getTextInputValue('prize');
@@ -309,7 +308,7 @@ module.exports = {
                 }, duration);
             }, duration);
         }
-    },
+    }
 };
 
 /**
