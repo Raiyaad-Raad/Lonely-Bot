@@ -54,7 +54,7 @@ module.exports = {
             filter: i => i.isModalSubmit(),
             time: 60000 // 15 seconds
         });
-        collector.on('collect', (interaction) => {
+        collector.on('collect', async (interaction) => {
             if (interaction.customId === 'giveaway_modal') {
                 const durationString = interaction.fields.getTextInputValue('duration');
                 const prize = interaction.fields.getTextInputValue('prize');
