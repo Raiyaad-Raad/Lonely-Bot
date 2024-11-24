@@ -1,4 +1,4 @@
-const { Client, ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder, StringSelectMenuBuilder, ActionRowBuilder, PermissionsBitField } = require('discord.js');
+const { Client, ChatInputCommandInteraction, StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
 
 module.exports = {
     name: "give",
@@ -21,7 +21,7 @@ module.exports = {
 
         // Create a select menu with the server's roles
         const roleSelectMenu = new StringSelectMenuBuilder()
-            .setCustomId('role_select')
+            .setCustomId('role_select') // Ensure the ID matches in the collector
             .setPlaceholder('Select a role to give yourself')
             .addOptions(
                 roles.map(role => ({
@@ -39,17 +39,14 @@ module.exports = {
             ephemeral: true
         });
 
-        // Create a collector to handle role selection
+        // Listen for the select menu interaction
         const collector = interaction.channel.createMessageComponentCollector({
             componentType: 'SELECT_MENU',
+            filter: (i) => i.customId === 'role_select' && i.user.id === interaction.user.id,
             time: 60000 // 1 minute
         });
 
         collector.on('collect', async (menuInteraction) => {
-            if (menuInteraction.user.id !== interaction.user.id) {
-                return menuInteraction.reply({ content: "This menu isn't for you!", ephemeral: true });
-            }
-
             const selectedRoleId = menuInteraction.values[0];
             const selectedRole = guild.roles.cache.get(selectedRoleId);
 
@@ -72,9 +69,10 @@ module.exports = {
             }
         });
 
-        collector.on('end', () => {
-            // Disable the select menu after the collector ends
-            interaction.editReply({ components: [] });
+        collector.on('end', (collected, reason) => {
+            if (reason === 'time') {
+                interaction.editReply({ content: "Role selection timed out.", components: [] });
+            }
         });
     }
 };
