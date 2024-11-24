@@ -1,5 +1,5 @@
 const { Client } = require('discord.js');
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
 const mongoURL = process.env.MONGO;
@@ -14,22 +14,22 @@ module.exports = {
      */
     async execute(client) {
         if(!mongoURL) return;
-        mongoose.connect(mongoURL, {
+        // mongoose.connect(mongoURL, {
 
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+        //     useNewUrlParser: true,
+        //     useUnifiedTopology: true
 
-        }).then((mongo) => {
-            db.on("ready", () => {
-                console.log(
-                    chalk.green('[MONGO]: '),
-                    chalk.bold('QuickMongo Has Been Added.')
-                )
-            })
-            console.log(chalk.green('[MONGO]: '), chalk.green('Mongoose Database aka. Cluster Connected Successfully'))
-        }).catch((err) => {
-            console.log(err);
-            process.exit();
+        // }).then((mongo) => {
+        //     console.log(chalk.green('[MONGO]: '), chalk.green('Mongoose Database aka. Cluster Connected Successfully'))
+        // }).catch((err) => {
+        //     console.log(err);
+        //     process.exit();
+        // })
+        db.on("ready", () => {
+            console.log(
+                chalk.green('[MONGO]: '),
+                chalk.bold('QuickMongo Has Been Added.')
+            )
         })
     }
 }

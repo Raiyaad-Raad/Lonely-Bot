@@ -1,57 +1,53 @@
-const { Client, ChatInputCommandInteraction } = require('discord.js');
+const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js')
+const axios = require('axios');
 
 module.exports = {
-    name: "slap", // command name
-    description: "Slap someone with a funny image!", // command description
-    category: "Fun", // command category
+    name: "slap", // command name here
+    description: "Slap someone!", // command description here
+    category: "🎈Fun", // command category here
     options: [
         {
-            name: "user", // option name
-            type: 6, // type 6 corresponds to a USER in Discord API
-            description: "The user you want to slap",
-            required: true, // make this option mandatory
-        },
+            name: "user",
+            description: "mention the user you want to slap",
+            required: true,
+            type: 6,
+          },
     ],
     /**
     * @param {Client} client
     * @param {ChatInputCommandInteraction} interaction
     **/
     async execute(interaction, client) {
-        // Predefined slap images
-        const slapImages = [
-            "https://i.imgur.com/fm49srQ.jpg", // Replace these with your desired slap images
-            "https://i.imgur.com/WxNkKpF.jpg",
-            "https://i.imgur.com/4oLIrwj.jpg",
-            "https://i.imgur.com/ovZUl6P.jpg",
-            "https://i.imgur.com/Nm6xDYM.jpg",
-        ];
+      const user = interaction.options.getUser('user');
 
-        // Get the user who invoked the command
-        const slapper = interaction.user;
-        // Get the target user from the options
-        const targetUser = interaction.options.getUser("user");
+      const randomPos = Math.floor(Math.random() * 5000);
 
-        // Prevent self-slapping
-        if (slapper.id === targetUser.id) {
-            return interaction.reply({
-                content: "You can't slap yourself! 🤦",
-                ephemeral: true,
-            });
+      const apiResponse = await axios.get('https://g.tenor.com/v1/search', {
+        params: {
+            q: 'anime slap',
+            key: 'YOUR_TENOR_API_KEY',
+            limit: 1,
+            pos: randomPos
         }
+    });
 
-        // Pick a random slap image
-        const randomImage = slapImages[Math.floor(Math.random() * slapImages.length)];
+      const gifs = apiResponse.data.results;
+      if (gifs.length === 0) {
+        return interaction.reply({ content: "Error Occured!, Try Again", ephemeral: true }).then(() => {
+          console.log("Error Searching Gifs. - Tenor API Erorr")
+      });
+      };
 
-        // Construct the response
-        await interaction.reply({
-            content: `${slapper} gave a big slap to ${targetUser}! 👋`,
-            embeds: [
-                {
-                    color: 0xff0000, // Set an embed color (red for slap)
-                    image: { url: randomImage }, // Attach the random image
-                },
-            ],
-            allowedMentions: { users: [slapper.id, targetUser.id] },
-        });
-    },
-};
+      const slapURL = gifs[0].media[0].gif.url;
+
+      const embed = new EmbedBuilder()
+                .setColor("Random")
+                .setDescription(`${interaction.user} slapped ${user}!`)
+                .setImage(slapURL)
+                .setTimestamp();
+
+      interaction.reply({
+        embeds: [embed]
+      })
+  }
+}
