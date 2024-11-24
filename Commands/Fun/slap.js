@@ -86,7 +86,7 @@ module.exports = {
             const response = await axios.get('https://g.tenor.com/v1/search', {
                 params: {
                     q: 'anime slap',
-                    key: 'YOUR_TENOR_API_KEY', // Replace with your Tenor API Key
+                    key: 'AIzaSyDSJzSFsg8qoxmS00_Ay1RsZps6iT5UmiQ', // Replace with your Tenor API Key
                     limit: 1, // Fetch only one GIF at the random position
                     pos: randomPos // Random position in search results
                 }
