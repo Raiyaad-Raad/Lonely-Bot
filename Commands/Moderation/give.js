@@ -21,7 +21,7 @@ module.exports = {
 
         // Create a select menu with the server's roles
         const roleSelectMenu = new StringSelectMenuBuilder()
-            .setCustomId('role_select') // Ensure the ID matches in the collector
+            .setCustomId('give_role_select') // Custom ID for identifying the interaction
             .setPlaceholder('Select a role to give yourself')
             .addOptions(
                 roles.map(role => ({
@@ -39,12 +39,9 @@ module.exports = {
             ephemeral: true
         });
 
-        // Listen for the select menu interaction
-        const collector = interaction.channel.createMessageComponentCollector({
-            componentType: 'SELECT_MENU',
-            filter: (i) => i.customId === 'role_select' && i.user.id === interaction.user.id,
-            time: 60000 // 1 minute
-        });
+        // Listen for interaction from the select menu
+        const filter = (i) => i.customId === 'give_role_select' && i.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
         collector.on('collect', async (menuInteraction) => {
             const selectedRoleId = menuInteraction.values[0];
@@ -56,23 +53,27 @@ module.exports = {
 
             const member = interaction.member;
 
+            // Check if the user already has the role
             if (member.roles.cache.has(selectedRoleId)) {
                 return menuInteraction.reply({ content: `You already have the **${selectedRole.name}** role!`, ephemeral: true });
             }
 
             try {
+                // Assign the role to the user
                 await member.roles.add(selectedRole);
-                return menuInteraction.reply({ content: `You have been given the **${selectedRole.name}** role!`, ephemeral: true });
+                return menuInteraction.reply({ content: `The **${selectedRole.name}** role has been given to you!`, ephemeral: true });
             } catch (err) {
                 console.error(err);
-                return menuInteraction.reply({ content: "I couldn't assign the role. Please ensure my role is above the selected role and I have the necessary permissions.", ephemeral: true });
+                return menuInteraction.reply({
+                    content: "I couldn't assign the role. Please ensure my role is above the selected role and I have the necessary permissions.",
+                    ephemeral: true
+                });
             }
         });
 
-        collector.on('end', (collected, reason) => {
-            if (reason === 'time') {
-                interaction.editReply({ content: "Role selection timed out.", components: [] });
-            }
+        collector.on('end', () => {
+            // Disable the select menu after the collector ends
+            interaction.editReply({ components: [] }).catch(console.error);
         });
     }
 };
