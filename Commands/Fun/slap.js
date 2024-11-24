@@ -25,7 +25,7 @@ module.exports = {
       const apiResponse = await axios.get('https://g.tenor.com/v1/search', {
         params: {
             q: 'anime slap',
-            key: 'YOUR_TENOR_API_KEY',
+            key: 'AIzaSyDSJzSFsg8qoxmS00_Ay1RsZps6iT5UmiQ',
             limit: 1,
             pos: randomPos
         }
