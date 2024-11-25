@@ -9,6 +9,7 @@ function reply(interaction, color, description) {
       .setAuthor({ name: `${client.user.name}`, iconURL: `${client.user.avatarURL}` })
       .setColor(`${color}`)
       .setDescription(`${description}`)
+      .setTimestamp()
     ]
   });
 }

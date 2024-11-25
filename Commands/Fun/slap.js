@@ -1,117 +1,61 @@
-// const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js')
-// const axios = require('axios');
-
-// module.exports = {
-//     name: "slap", // command name here
-//     description: "Slap someone!", // command description here
-//     category: "🎈Fun", // command category here
-    // options: [
-    //     {
-    //         name: "user",
-    //         description: "mention the user you want to slap",
-    //         required: true,
-    //         type: 6,
-    //       },
-    // ],
-//     /**
-//     * @param {Client} client
-//     * @param {ChatInputCommandInteraction} interaction
-//     **/
-//     async execute(interaction, client) {
-//       const user = interaction.options.getUser('user');
-
-//       const randomPos = Math.floor(Math.random() * 5000);
-
-//       const apiResponse = await axios.get('https://g.tenor.com/v1/search', {
-//         params: {
-//             q: 'anime slap',
-//             key: 'AIzaSyDSJzSFsg8qoxmS00_Ay1RsZps6iT5UmiQ',
-//             limit: 1,
-//             pos: randomPos
-//         }
-//     });
-
-//       const gifs = apiResponse.data.results;
-//       if (gifs.length === 0) {
-//         return interaction.reply({ content: "Error Occured!, Try Again", ephemeral: true }).then(() => {
-//           console.log("Error Searching Gifs. - Tenor API Erorr")
-//       });
-//       };
-
-//       const slapURL = gifs[0].media[0].gif.url;
-
-//       const embed = new EmbedBuilder()
-//                 .setColor("Random")
-//                 .setDescription(`${interaction.user} slapped ${user}!`)
-//                 .setImage(slapURL)
-//                 .setTimestamp();
-
-//       interaction.reply({
-//         embeds: [embed]
-//       })
-//   }
-// }
 const { Client, ChatInputCommandInteraction, EmbedBuilder } = require('discord.js');
 const axios = require('axios');
-
+const dotenv = require('dotenv');
+const apiKey = process.env.GIPHY_API_KEY;
+const apiURL = process.env.GIPHY_API_URL;
 module.exports = {
-    name: "slap", // command name
-    description: "Slap a user with a random anime gif!", // command description
-    category: "Fun", // command category
+    name: "slap", 
+    description: "Slap Someone! (*/ω＼*)",
+    category: ".🎈Fun",
     options: [
-      {
-          name: "user",
-          description: "mention the user you want to slap",
-          required: true,
-          type: 6,
-        },
-  ],
+        {
+            name: "user",
+            description: "mention the user you want to ban",
+            required: true,
+            type: 6,
+          },
+    ],
     /**
-     * @param {Client} client
-     * @param {ChatInputCommandInteraction} interaction
-     **/
+    * @param {Client} client
+    * @param {ChatInputCommandInteraction} interaction
+    **/
     async execute(interaction, client) {
-        // Fetch the target user
-        const targetUser = interaction.options.getUser('user');
+        const user = interaction.options.getUser('user');
 
-        if (!targetUser) {
-            return interaction.reply({ content: "You need to mention someone to slap!", ephemeral: true });
-        }
-
-        try {
-            // Generate a random offset for infinite randomness
-            const randomPos = Math.floor(Math.random() * 5000); // Random position between 0 and 5000
-
-            // Fetch GIFs from Tenor API with random offset
-            const response = await axios.get('https://g.tenor.com/v1/search', {
-                params: {
-                    q: 'anime slap',
-                    key: 'AIzaSyDSJzSFsg8qoxmS00_Ay1RsZps6iT5UmiQ', // Replace with your Tenor API Key
-                    limit: 1, // Fetch only one GIF at the random position
-                    pos: randomPos // Random position in search results
-                }
-            });
-
-            const gifs = response.data.results;
-
-            if (gifs.length === 0) {
-                return interaction.reply({ content: "Couldn't find a slap GIF, try again!", ephemeral: true });
+        axios.get(`${apiURLl}`, {
+            params: {
+                api_key: apiKey,
+                q: 'anime slap'
+            }   
+        }).then((res, err) => {
+            if(err) {
+                interaction.reply({
+                    embeds: [
+                        new EmbedBuilder()
+                        .setAuthor({ name: `${client.user.name}`, iconURL: `${client.user.avatarURL}` })
+                        .setDescription(`⭕ ERROR! Can't Fetch API; Please Try Again Later\n
+                        If The Problem Still Pursists Please Contatct The Owner Of The Bot.`)
+                        .setTimestamp()
+                    ],
+                    ephemeral: true,
+                })
+                console.log('Error!', 'API Related!', 'Problem Detected In Giphy API!', err)
+            } else if (res) {
+                const int = Math.floor(Math.random() * res.data.data.length);
+                const gifURI = res.data.data[int].embed_url;
+                const slapEmbed = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle('Someone Slapped~~!')
+                .setAuthor({ name: `${client.user.name}`, iconURL: `${client.user.avatarURL}` })
+                .setDescription(`**${interaction.user} Has Slapped ${user}! Naughty~~**`)
+                .setImage(`${gifURI}`)
+                .setTimestamp()
+                interaction.reply({
+                    embeds: [
+                        slapEmbed
+                    ]
+                })
             }
-
-            const gifUrl = gifs[0].media[0].gif.url;
-
-            // Create the embed
-            const embed = new EmbedBuilder()
-                .setColor("Random")
-                .setDescription(`${interaction.user} slapped ${targetUser}!`)
-                .setImage(gifUrl)
-                .setTimestamp();
-
-            // Send the embed
-            await interaction.reply({ embeds: [embed] });
-        } catch (error) {
-            console.error(error);
-            interaction.reply({ content: "Something went wrong while fetching the slap GIF!", ephemeral: true });
-        }
+        })
     }
-};
+}

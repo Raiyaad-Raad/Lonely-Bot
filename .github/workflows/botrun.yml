@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22]  # Use the latest Node.js version
+        node-version: [22] 
 
     steps:
       - uses: actions/checkout@v4
@@ -23,11 +23,12 @@ jobs:
       - name: Install Dependencies
         run: |
           npm ci --cache .npm
-      - name: Build and Run
+      - name: Run The Bot
         env:
           TOKEN: ${{ secrets.TOKEN }}
           MONGO: ${{ secrets.MONGO }}
+          GIPHY_API_KEY: ${{ secrets.GIPHY_API_KEY }}
+          GIPHY_API_URL: ${{ secrets.GIPHY_API_URL }}
         run: |
-          # Build your project here, if necessary
           npm install nodemon -g
           node shards.js
