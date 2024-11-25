@@ -42,7 +42,7 @@ module.exports = {
                 console.log('Error!', 'API Related!', 'Problem Detected In Giphy API!', err)
             } else if (res) {
                 const int = Math.floor(Math.random() * res.data.data.length);
-                const gifURI = res.data.data[int].embed_url;
+                const gifURI = res.data.data[int].url;
                 const slapEmbed = new EmbedBuilder()
                 .setColor('Aqua')
                 .setTitle('Someone Slapped~~!')
