@@ -22,7 +22,7 @@ module.exports = {
     async execute(interaction, client) {
         const user = interaction.options.getUser('user');
 
-        axios.get(`${apiURLl}`, {
+        axios.get(`${apiURL}`, {
             params: {
                 api_key: apiKey,
                 q: 'anime slap'
