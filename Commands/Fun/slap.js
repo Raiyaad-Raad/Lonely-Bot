@@ -47,7 +47,7 @@ module.exports = {
                 .setColor('Aqua')
                 .setTitle('Someone Slapped~~!')
                 .setDescription(`**${interaction.user} Has Slapped ${user}! Naughty~~**`)
-                .setImage(gifURI)
+                .setThumbnail(gifURI)
                 .setTimestamp()
                 interaction.reply({
                     embeds: [
