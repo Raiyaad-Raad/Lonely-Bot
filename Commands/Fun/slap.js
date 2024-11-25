@@ -46,9 +46,8 @@ module.exports = {
                 const slapEmbed = new EmbedBuilder()
                 .setColor('Aqua')
                 .setTitle('Someone Slapped~~!')
-                .setAuthor({ name: `${client.user.name}`, iconURL: `${client.user.avatarURL}` })
                 .setDescription(`**${interaction.user} Has Slapped ${user}! Naughty~~**`)
-                .setImage(`${gifURI}`)
+                .setImage(gifURI)
                 .setTimestamp()
                 interaction.reply({
                     embeds: [
