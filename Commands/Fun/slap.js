@@ -25,7 +25,8 @@ module.exports = {
         axios.get(`${apiURL}`, {
             params: {
                 api_key: apiKey,
-                q: 'anime slap'
+                q: 'anime slap',
+                tag: 'anime',
             }   
         }).then((res, err) => {
             if(err) {
